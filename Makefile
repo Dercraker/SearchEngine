@@ -108,6 +108,9 @@ env-check: check-env ## Verify .env configuration
 	@echo -e "$(YELLOW)POSTGRES_PASSWORD:$(RESET)   $(shell grep POSTGRES_PASSWORD .env | cut -d '=' -f2)"
 	@echo -e "$(YELLOW)POSTGRES_DB:$(RESET)         $(shell grep POSTGRES_DB .env | cut -d '=' -f2)"
 	@echo -e "$(YELLOW)DATABASE_URL:$(RESET)        $(shell grep DATABASE_URL .env | cut -d '=' -f2)"
+	@echo -e "$(YELLOW)API_ADDR:$(RESET)            $(shell grep API_ADDR .env | cut -d '=' -f2)"
+	@echo -e "$(YELLOW)API_READ_TIMEOUT:$(RESET)    $(shell grep API_READ_TIMEOUT .env | cut -d '=' -f2)"
+	@echo -e "$(YELLOW)API_WRITE_TIMEOUT:$(RESET)   $(shell grep API_WRITE_TIMEOUT .env | cut -d '=' -f2)"
 
 # =============================================================================
 # Help
