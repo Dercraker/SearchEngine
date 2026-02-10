@@ -9,7 +9,7 @@ EXECUTOR := docker compose
 
 # if podman is available, use it instead of docker
 ifneq (, $(shell which podman 2>/dev/null))
-$(info ❗❗ Using podman for compose commands❗❗)
+$(info Using podman for compose commands)
 EXECUTOR := podman compose
 endif
 
@@ -90,6 +90,13 @@ db-migrate-down: check-env ## Rollback database migrations
 db-generate: check-env ## Generate a database models
 	@echo -e "$(CYAN)🔄 Generating database models...$(RESET)"
 	sqlc generate
+	@echo -e "$(GREEN)✅ Database models generated$(RESET)"
+
+.PHONY: db-schema
+db-schema: check-env ## Generate a database models
+	@echo -e "$(CYAN)🔄 Generating database schema...$(RESET)"
+	podman run --rm --network=host docker.io/library/postgres:17 \
+      pg_dump "$DB_DSN" --schema-only --no-owner --no-privileges
 	@echo -e "$(GREEN)✅ Database models generated$(RESET)"
 
 # =============================================================================
