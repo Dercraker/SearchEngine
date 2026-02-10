@@ -51,6 +51,8 @@ func (h *SearchHandler) Handle(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("X-Result-Count", strconv.Itoa(len(results)))
+	w.Header().Set("X-Page", strconv.Itoa(page))
+	w.Header().Set("X-Limit", strconv.Itoa(limit))
 	w.WriteHeader(http.StatusOK)
 
 	if results == nil {
