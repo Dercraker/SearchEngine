@@ -36,8 +36,8 @@ func (s *searchService) Search(_ any, r *http.Request, q string, limit, offset i
 			slog.Any("error", err),
 		}
 
-		if requestId, isValid := requestId.Get(ctx); isValid {
-			attributes = append(attributes, slog.String("request_id", requestId))
+		if reqId, isValid := requestId.Get(ctx); isValid {
+			attributes = append(attributes, slog.String("request_id", reqId))
 		}
 
 		s.logger.Error("DB : Search Failed", attributes...)
