@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/Dercraker/SearchEngine/internal/shared/configHelper"
 	"github.com/joho/godotenv"
 )
 
@@ -27,41 +28,41 @@ type Config struct {
 func Load() (Config, error) {
 	_ = godotenv.Load()
 
-	addr := getEnv("API_ADDR", ":8080")
-	rt, err := parseDuration("API_READ_TIMEOUT", "5s")
+	addr := configHelper.GetEnv("API_ADDR", ":8080")
+	rt, err := configHelper.ParseDuration("API_READ_TIMEOUT", "5s")
 	if err != nil {
 		return Config{}, err
 	}
 
-	wt, err := parseDuration("API_WRITE_TIMEOUT", "10s")
+	wt, err := configHelper.ParseDuration("API_WRITE_TIMEOUT", "10s")
 	if err != nil {
 		return Config{}, err
 	}
 
-	sld := getEnvInt("API_SEARCH_LIMIT_DEFAULT", 10)
-	slm := getEnvInt("API_SEARCH_LIMIT_MAX", 50)
+	sld := configHelper.GetEnvInt("API_SEARCH_LIMIT_DEFAULT", 10)
+	slm := configHelper.GetEnvInt("API_SEARCH_LIMIT_MAX", 50)
 
-	dsn := getEnv("DATABASE_DSN", "")
+	dsn := configHelper.GetEnv("DATABASE_DSN", "")
 	if dsn == "" {
 		return Config{}, errors.New("DATABASE_DSN is required")
 	}
 
-	dbPingTimeout, err := parseDuration("DATABASE_PING_TIMEOUT", "2s")
+	dbPingTimeout, err := configHelper.ParseDuration("DATABASE_PING_TIMEOUT", "2s")
 	if err != nil {
 		return Config{}, err
 	}
 
-	dbFailFast := getEnvBool("DATABASE_FAIL_FAST", true)
+	dbFailFast := configHelper.GetEnvBool("DATABASE_FAIL_FAST", true)
 
-	dbMaxIdleConns := getEnvInt("DATABASE_MAX_IDLE_CONNS", 10)
-	dbMaxOpenConns := getEnvInt("DATABASE_MAX_OPEN_CONNS", 10)
+	dbMaxIdleConns := configHelper.GetEnvInt("DATABASE_MAX_IDLE_CONNS", 10)
+	dbMaxOpenConns := configHelper.GetEnvInt("DATABASE_MAX_OPEN_CONNS", 10)
 
-	dbConnMaxLifetime, err := parseDuration("DATABASE_CONN_MAX_LIFETIME", "30m")
+	dbConnMaxLifetime, err := configHelper.ParseDuration("DATABASE_CONN_MAX_LIFETIME", "30m")
 	if err != nil {
 		return Config{}, err
 	}
 
-	dbConnMaxIdleTime, err := parseDuration("DATABASE_CONN_MAX_IDLE_TIME", "5m")
+	dbConnMaxIdleTime, err := configHelper.ParseDuration("DATABASE_CONN_MAX_IDLE_TIME", "5m")
 	if err != nil {
 		return Config{}, err
 	}

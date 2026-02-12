@@ -1,4 +1,4 @@
-package config
+package configHelper
 
 import (
 	"errors"
@@ -7,14 +7,14 @@ import (
 	"time"
 )
 
-func getEnv(key, fallback string) string {
+func GetEnv(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
 	}
 	return fallback
 }
 
-func getEnvInt(key string, fallback int) int {
+func GetEnvInt(key string, fallback int) int {
 	if v := os.Getenv(key); v != "" {
 		n, err := strconv.Atoi(v)
 		if err == nil && n > 0 {
@@ -24,8 +24,8 @@ func getEnvInt(key string, fallback int) int {
 	return fallback
 }
 
-func parseDuration(key, fallback string) (time.Duration, error) {
-	raw := getEnv(key, fallback)
+func ParseDuration(key, fallback string) (time.Duration, error) {
+	raw := GetEnv(key, fallback)
 	d, err := time.ParseDuration(raw)
 
 	if err != nil {
@@ -35,7 +35,7 @@ func parseDuration(key, fallback string) (time.Duration, error) {
 	return d, nil
 }
 
-func getEnvBool(key string, fallback bool) bool {
+func GetEnvBool(key string, fallback bool) bool {
 	v := os.Getenv(key)
 	if v == "" {
 		return fallback
