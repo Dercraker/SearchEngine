@@ -71,19 +71,19 @@ db-migrate-create: check-env ## Create a new database migration
 .PHONY: db-migrate-status
 db-migrate-status: check-env ## Check database migration status
 	@echo -e "$(CYAN)🔄 Checking database migration status...$(RESET)"
-	goose -dir db/migration postgres "$(shell grep DATABASE_URL .env | cut -d '=' -f2)" status
+	goose -dir db/migration postgres "$(shell grep DATABASE_DSN .env | cut -d '=' -f2)" status
 	@echo -e "$(GREEN)✅ Migrations status checked$(RESET)"
 
 .PHONY: db-migrate-up
 db-migrate-up: check-env ## Apply database migrations
 	@echo -e "$(CYAN)🔄 Applying database migrations...$(RESET)"
-	goose -dir db/migration postgres "$(shell grep DATABASE_URL .env | cut -d '=' -f2)" up
+	goose -dir db/migration postgres "$(shell grep DATABASE_DSN .env | cut -d '=' -f2)" up
 	@echo -e "$(GREEN)✅ Migrations applied$(RESET)"
 
 .PHONY: db-migrate-down
 db-migrate-down: check-env ## Rollback database migrations
 	@echo -e "$(CYAN)🔄 Rolling back database migrations...$(RESET)"
-	goose -dir db/migration postgres "$(shell grep DATABASE_URL .env | cut -d '=' -f2)" down
+	goose -dir db/migration postgres "$(shell grep DATABASE_DSN .env | cut -d '=' -f2)" down
 	@echo -e "$(GREEN)✅ Migrations rolled back$(RESET)"
 
 .PHONY: db-generate
@@ -114,7 +114,7 @@ env-check: check-env ## Verify .env configuration
 	@echo -e "$(YELLOW)POSTGRES_USER:$(RESET)       $(shell grep POSTGRES_USER .env | cut -d '=' -f2)"
 	@echo -e "$(YELLOW)POSTGRES_PASSWORD:$(RESET)   $(shell grep POSTGRES_PASSWORD .env | cut -d '=' -f2)"
 	@echo -e "$(YELLOW)POSTGRES_DB:$(RESET)         $(shell grep POSTGRES_DB .env | cut -d '=' -f2)"
-	@echo -e "$(YELLOW)DATABASE_URL:$(RESET)        $(shell grep DATABASE_URL .env | cut -d '=' -f2)"
+	@echo -e "$(YELLOW)DATABASE_DSN:$(RESET)        $(shell grep DATABASE_DSN .env | cut -d '=' -f2)"
 	@echo -e "$(YELLOW)API_ADDR:$(RESET)            $(shell grep API_ADDR .env | cut -d '=' -f2)"
 	@echo -e "$(YELLOW)API_READ_TIMEOUT:$(RESET)    $(shell grep API_READ_TIMEOUT .env | cut -d '=' -f2)"
 	@echo -e "$(YELLOW)API_WRITE_TIMEOUT:$(RESET)   $(shell grep API_WRITE_TIMEOUT .env | cut -d '=' -f2)"

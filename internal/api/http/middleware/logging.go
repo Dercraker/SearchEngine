@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Dercraker/SearchEngine/internal/shared"
 	"github.com/Dercraker/SearchEngine/internal/shared/requestId"
 	"github.com/google/uuid"
 )
@@ -31,7 +32,7 @@ func Logging(logger *slog.Logger) func(http.Handler) http.Handler {
 				slog.String("path", r.URL.Path),
 				slog.Int("status", rw.statusCode),
 				slog.String("remote", r.RemoteAddr),
-				slog.Duration("duration", time.Since(startTime)),
+				slog.Float64("duration_ms", shared.DurationMs(startTime, time.Now())),
 				slog.String("request_id", requestID),
 			)
 		})

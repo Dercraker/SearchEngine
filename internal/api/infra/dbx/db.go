@@ -6,6 +6,8 @@ import (
 	"errors"
 	"log/slog"
 	"time"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type Options struct {

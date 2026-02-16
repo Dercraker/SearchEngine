@@ -66,10 +66,9 @@ func (r Runner) RunOnce(ctx context.Context) (Stats, error) {
 			continue
 		}
 		st.Success++
-		r.Logger.Info("[Crawler] finished for seed", slog.Any("seed", key))
 	}
 	st.EndTime = time.Now()
 	r.Logger.Info("[Crawler] finished running")
-	r.Logger.Info("[Crawler] Summary", slog.Int("totalSeed", st.TotalSeeds), slog.Int("InvalidSeeds", st.InvalidSeeds), slog.Int("DedupSkipped", st.DedupSkipped), slog.Int("processed", st.Processed), slog.Int("success", st.Success), slog.Int("failed", st.Failed), slog.Duration("Duration", st.Duration()))
+	r.Logger.Info("[Crawler] Summary", slog.Int("totalSeed", st.TotalSeeds), slog.Int("InvalidSeeds", st.InvalidSeeds), slog.Int("DedupSkipped", st.DedupSkipped), slog.Int("processed", st.Processed), slog.Int("success", st.Success), slog.Int("failed", st.Failed), slog.Float64("DurationMs", st.DurationMs()))
 	return st, nil
 }

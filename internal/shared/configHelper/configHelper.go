@@ -23,6 +23,15 @@ func GetEnvInt(key string, fallback int) int {
 	}
 	return fallback
 }
+func GetEnvInt64(key string, fallback int64) int64 {
+	if v := os.Getenv(key); v != "" {
+		n, err := strconv.ParseInt(v, 10, 64)
+		if err == nil && n > 0 {
+			return n
+		}
+	}
+	return fallback
+}
 
 func ParseDuration(key, fallback string) (time.Duration, error) {
 	raw := GetEnv(key, fallback)

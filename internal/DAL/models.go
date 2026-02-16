@@ -25,11 +25,11 @@ type CrawlQueue struct {
 type Document struct {
 	ID          uuid.UUID
 	Url         string
-	FetchedAt   sql.NullTime
-	StatusCode  sql.NullInt32
-	ContentType sql.NullString
+	FetchedAt   time.Time
+	StatusCode  int32
+	ContentType string
 	ContentHash sql.NullString
-	RawContent  sql.NullString
+	RawContent  []byte
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }

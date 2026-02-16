@@ -1,6 +1,10 @@
 package crawler
 
-import "time"
+import (
+	"time"
+
+	"github.com/Dercraker/SearchEngine/internal/shared"
+)
 
 type Stats struct {
 	TotalSeeds   int
@@ -13,9 +17,6 @@ type Stats struct {
 	EndTime      time.Time
 }
 
-func (s Stats) Duration() time.Duration {
-	if s.EndTime.IsZero() || s.StartTime.IsZero() {
-		return 0
-	}
-	return s.EndTime.Sub(s.StartTime)
+func (s Stats) DurationMs() float64 {
+	return shared.DurationMs(s.StartTime, s.EndTime)
 }

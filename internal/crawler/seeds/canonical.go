@@ -32,8 +32,6 @@ func CanonicalKey(u *url.URL, options CanonicalOptions) (string, error) {
 		} else {
 			host = net.JoinHostPort(h, p)
 		}
-	} else {
-		fmt.Errorf("invalid host: %s", host)
 	}
 
 	c.Host = host
@@ -45,7 +43,7 @@ func CanonicalKey(u *url.URL, options CanonicalOptions) (string, error) {
 	if !strings.HasPrefix(c.Path, "/") {
 		c.Path = "/" + c.Path
 	}
-	if c.Path != "/" && strings.HasPrefix(c.Path, "/") {
+	if c.Path != "/" && !strings.HasPrefix(c.Path, "/") {
 		c.Path = "/" + strings.TrimSuffix(c.Path, "/")
 	}
 
