@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/Dercraker/SearchEngine/internal/crawler/config"
 )
 
 func TestFetch_HTML_ReturnsBodyAndMeta(t *testing.T) {
@@ -21,7 +23,7 @@ func TestFetch_HTML_ReturnsBodyAndMeta(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	f := New(Config{
+	f := New(Config.FetcherConfig{
 		Timeout:         2 * time.Second,
 		UserAgent:       "TestBot/1.0",
 		FollowRedirects: true,
@@ -54,7 +56,7 @@ func TestFetch_Redirect_Refused(t *testing.T) {
 	}))
 	defer redirector.Close()
 
-	f := New(Config{
+	f := New(Config.FetcherConfig{
 		Timeout:         2 * time.Second,
 		UserAgent:       "TestBot/1.0",
 		FollowRedirects: false,

@@ -7,7 +7,7 @@ import (
 	"github.com/Dercraker/SearchEngine/internal/api/config"
 )
 
-func NewServer(cfg config.Config, handler http.Handler) *http.Server {
+func NewServer(cfg config.ApiConfig, handler http.Handler) *http.Server {
 	return &http.Server{
 		Addr:         cfg.Addr,
 		Handler:      handler,

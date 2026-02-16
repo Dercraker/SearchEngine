@@ -9,37 +9,37 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type Config struct {
+type ApiConfig struct {
 	Addr         string
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
 
-	DatabaseConfig config.DatabaseConfig
+	DatabaseConfig SharedConfig.DatabaseConfig
 
 	SearchLimitDefault int
 	SearchLimitMax     int
 }
 
-func Load() (Config, error) {
+func LoadApiConfig() (ApiConfig, error) {
 	_ = godotenv.Load()
 
 	addr := configHelper.GetEnv("API_ADDR", ":8080")
 	rt, err := configHelper.ParseDuration("API_READ_TIMEOUT", "5s")
 	if err != nil {
-		return Config{}, err
+		return ApiConfig{}, err
 	}
 
 	wt, err := configHelper.ParseDuration("API_WRITE_TIMEOUT", "10s")
 	if err != nil {
-		return Config{}, err
+		return ApiConfig{}, err
 	}
 
 	sld := configHelper.GetEnvInt("API_SEARCH_LIMIT_DEFAULT", 10)
 	slm := configHelper.GetEnvInt("API_SEARCH_LIMIT_MAX", 50)
 
-	dbConfig, err := config.LoadDatabaseConfig()
+	dbConfig, err := SharedConfig.LoadDatabaseConfig()
 	if err != nil {
-		return Config{}, err
+		return ApiConfig{}, err
 	}
 
 	if sld <= 0 {
@@ -50,10 +50,10 @@ func Load() (Config, error) {
 	}
 
 	if sld > slm {
-		return Config{}, errors.New("API_SEARCH_LIMIT_DEFAULT must be less than API_SEARCH_LIMIT_MAX")
+		return ApiConfig{}, errors.New("API_SEARCH_LIMIT_DEFAULT must be less than API_SEARCH_LIMIT_MAX")
 	}
 
-	return Config{
+	return ApiConfig{
 		Addr:         addr,
 		ReadTimeout:  rt,
 		WriteTimeout: wt,

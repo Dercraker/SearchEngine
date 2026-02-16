@@ -21,7 +21,7 @@ func (NoopProcessor) Process(_ context.Context, _ *url.URL) error {
 func main() {
 	logger := logging.New()
 
-	crawlerConfig, err := CrawlerConfig.Load()
+	crawlerConfig, err := Config.LoadCrawlerConfig()
 	if err != nil {
 		log.Fatalf("config: %v", err)
 	}

@@ -15,11 +15,11 @@ import (
 )
 
 type App struct {
-	cfg    config.Config
+	cfg    config.ApiConfig
 	router http.Handler
 }
 
-func New(cfg config.Config) *App {
+func New(cfg config.ApiConfig) *App {
 	logger := logging.New()
 
 	dbConn, err := dbx.Open(logger, dbx.Options{

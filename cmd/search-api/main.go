@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	cfg, err := config.Load()
+	cfg, err := config.LoadApiConfig()
 
 	if err != nil {
 		log.Fatalf("config: %v", err)

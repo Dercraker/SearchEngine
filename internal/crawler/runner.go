@@ -2,10 +2,12 @@ package crawler
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/url"
 	"time"
 
+	errors2 "github.com/Dercraker/SearchEngine/internal/crawler/errors"
 	"github.com/Dercraker/SearchEngine/internal/crawler/seeds"
 )
 
@@ -60,9 +62,15 @@ func (r Runner) RunOnce(ctx context.Context) (Stats, error) {
 		cu, _ := url.Parse(key)
 
 		st.Processed++
-		if perr := r.Processor.Process(ctx, cu); perr != nil {
+
+		perr := r.Processor.Process(ctx, cu)
+		if perr != nil {
+			if errors.Is(err, errors2.ErrMaxPagesReached) {
+				r.Logger.Info("[Crawler] stop reason=max_pages_reached processed", slog.String("seed", key), slog.Int("processed", st.Processed))
+				break
+			}
+
 			st.Failed++
-			r.Logger.Error("[Crawler] failed to process seed", slog.Any("seed", key), slog.Any("error", perr))
 			continue
 		}
 		st.Success++

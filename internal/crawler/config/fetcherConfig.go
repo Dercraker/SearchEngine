@@ -1,4 +1,4 @@
-package httpfetch
+package Config
 
 import (
 	"log/slog"
@@ -7,19 +7,19 @@ import (
 	"github.com/Dercraker/SearchEngine/internal/shared/configHelper"
 )
 
-type Config struct {
+type FetcherConfig struct {
 	Timeout         time.Duration
 	UserAgent       string
 	MaxBodyBytes    int64
 	FollowRedirects bool
 	MaxRedirects    int
-	logger          *slog.Logger
+	Logger          *slog.Logger
 }
 
-func LoadFetcherConfig() (fetcherConfig Config, err error) {
+func LoadFetcherConfig() (fetcherConfig FetcherConfig, err error) {
 	readTimeout, err := configHelper.ParseDuration("CRAWLER_READ_TIMEOUT", "30s")
 	if err != nil {
-		return Config{}, err
+		return FetcherConfig{}, err
 	}
 
 	userAgent := configHelper.GetEnv("CRAWLER_USER_AGENT", "")
@@ -28,7 +28,7 @@ func LoadFetcherConfig() (fetcherConfig Config, err error) {
 
 	maxRedirects := configHelper.GetEnvInt("CRAWLER_MAX_REDIRECTS", 5)
 
-	return Config{
+	return FetcherConfig{
 		Timeout:         readTimeout,
 		UserAgent:       userAgent,
 		MaxBodyBytes:    maxBodyBytes,
