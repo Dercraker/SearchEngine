@@ -2,6 +2,8 @@ package processors
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"net/url"
 	"strings"
 
@@ -28,10 +30,19 @@ func (d Downloader) Process(ctx context.Context, u *url.URL) error {
 	//ICI on parse / extract / store
 
 	hash := sha256Hex(res.Body)
+	finalUrl := res.FinalURL
 
-	if err := d.Store.UpsertFetch(ctx, res.FinalURL, res.StatusCode, res.ContentType, hash, res.Body); err != nil {
+	oldHash, err := d.Store.GetHashByURL(ctx, finalUrl)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return d.Store.UpsertFetch(ctx, res.FinalURL, res.StatusCode, res.ContentType, hash, res.Body)
+		}
 		return err
 	}
 
-	return nil
+	if oldHash == hash {
+		return d.Store.TouchFetchAt(ctx, finalUrl, res.StatusCode, res.ContentType)
+	}
+
+	return d.Store.UpsertFetch(ctx, res.FinalURL, res.StatusCode, res.ContentType, hash, res.Body)
 }

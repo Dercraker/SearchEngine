@@ -14,7 +14,7 @@ import (
 
 type NoopProcessor struct{}
 
-func (NoopProcessor) Process(ctx context.Context, _ *url.URL) error {
+func (NoopProcessor) Process(_ context.Context, _ *url.URL) error {
 	return nil
 }
 
