@@ -33,7 +33,8 @@ func New(cfg config.ApiConfig) *App {
 	})
 
 	if err != nil {
-		panic(err)
+		logger.Error("db: failed to open connection", slog.Any("error", err))
+		return nil, err
 	}
 
 	queries := DAL.New(dbConn)

@@ -16,7 +16,11 @@ func (s DocumentStore) GetHashByURL(ctx context.Context, url string) (string, er
 	if err != nil {
 		return "", err
 	}
-	return h.String, err
+
+	if !h.Valid {
+		return "", sql.ErrNoRows
+	}
+	return h.String, nil
 }
 
 func (s DocumentStore) TouchFetchAt(ctx context.Context, url string, statusCode int, contentType string) error {

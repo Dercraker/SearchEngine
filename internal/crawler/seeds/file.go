@@ -26,7 +26,7 @@ func (s FileSource) Load(_ context.Context) ([]string, error) {
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
-		out = append(out, sc.Text())
+		out = append(out, line)
 	}
 
 	if err := sc.Err(); err != nil {

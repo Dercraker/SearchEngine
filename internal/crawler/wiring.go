@@ -15,7 +15,7 @@ import (
 	"github.com/Dercraker/SearchEngine/internal/crawler/storage"
 )
 
-func Buildcrawler(logger *slog.Logger, cfg CrawlerConfig.CrawlerConfig) Runner {
+func BuildCrawler(logger *slog.Logger, cfg CrawlerConfig.CrawlerConfig) Runner {
 	seedSource := seeds.FileSource{Path: cfg.SeedFilePath}
 
 	dbConn, err := dbx.Open(logger, dbx.Options{
@@ -36,7 +36,9 @@ func Buildcrawler(logger *slog.Logger, cfg CrawlerConfig.CrawlerConfig) Runner {
 
 	store := storage.DocumentStore{Q: q}
 
-	fetcher := httpfetch.New(cfg.FetcherConfig)
+	fetcherCfg := cfg.FetcherConfig
+	fetcherCfg.Logger = logger
+	fetcher := httpfetch.New(fetcherCfg)
 	downloader := processors.Downloader{Fetcher: fetcher, Store: store}
 
 	limiter := rateLimit.NewRateLimiter(cfg.LimitConfig)

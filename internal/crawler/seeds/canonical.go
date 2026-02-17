@@ -15,7 +15,7 @@ type CanonicalOptions struct {
 
 func CanonicalKey(u *url.URL, options CanonicalOptions) (string, error) {
 	if u == nil {
-		fmt.Errorf("nil url")
+		return "", fmt.Errorf("nil url")
 	}
 
 	c := *u

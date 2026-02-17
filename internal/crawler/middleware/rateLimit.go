@@ -2,10 +2,10 @@ package middleware
 
 import (
 	"context"
-	"errors"
 	"net/url"
 
 	"github.com/Dercraker/SearchEngine/internal/crawler/rateLimit"
+	"github.com/Dercraker/SearchEngine/internal/shared/customErrors"
 )
 
 func RateLimitMW(l *rateLimit.Limiter) Middleware {
@@ -13,7 +13,7 @@ func RateLimitMW(l *rateLimit.Limiter) Middleware {
 		return URLProcessorFunc(func(ctx context.Context, u *url.URL) error {
 			n := l.Count.Add(1)
 			if n > l.Cfg.MaxPagesPerRun {
-				return errors.ErrUnsupported
+				return customErrors.ErrMaxPagesReached
 			}
 
 			if err := l.WaitGlobal(ctx); err != nil {

@@ -14,7 +14,7 @@ type ApiConfig struct {
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
 
-	DatabaseConfig SharedConfig.DatabaseConfig
+	DatabaseConfig sharedconfig.DatabaseConfig
 
 	SearchLimitDefault int
 	SearchLimitMax     int
@@ -37,7 +37,7 @@ func LoadApiConfig() (ApiConfig, error) {
 	sld := configHelper.GetEnvInt("API_SEARCH_LIMIT_DEFAULT", 10)
 	slm := configHelper.GetEnvInt("API_SEARCH_LIMIT_MAX", 50)
 
-	dbConfig, err := SharedConfig.LoadDatabaseConfig()
+	dbConfig, err := sharedconfig.LoadDatabaseConfig()
 	if err != nil {
 		return ApiConfig{}, err
 	}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"log/slog"
-	"net/url"
 	"os"
 
 	"github.com/Dercraker/SearchEngine/internal/crawler"
@@ -12,23 +11,17 @@ import (
 	"github.com/Dercraker/SearchEngine/internal/shared/logging"
 )
 
-type NoopProcessor struct{}
-
-func (NoopProcessor) Process(_ context.Context, _ *url.URL) error {
-	return nil
-}
-
 func main() {
 	logger := logging.New()
 
-	crawlerConfig, err := Config.LoadCrawlerConfig()
+	crawlerConfig, err := config.LoadCrawlerConfig()
 	if err != nil {
 		log.Fatalf("config: %v", err)
 	}
 
-	r := crawler.Buildcrawler(logger, crawlerConfig)
+	r := crawler.BuildCrawler(logger, crawlerConfig)
 
-	ctx, cancel := context.WithTimeout(context.Background(), crawlerConfig.FetcherConfig.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), crawlerConfig.RunTimeout)
 	defer cancel()
 
 	stats, err := r.RunOnce(ctx)

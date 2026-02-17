@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Dercraker/SearchEngine/internal/crawler/customErrors"
 	"github.com/Dercraker/SearchEngine/internal/crawler/seeds"
+	"github.com/Dercraker/SearchEngine/internal/shared/customErrors"
 )
 
 type Runner struct {
@@ -49,7 +49,8 @@ func (r Runner) RunOnce(ctx context.Context) (Stats, error) {
 		key, kerr := seeds.CanonicalKey(u, r.CanonicalOptions)
 		if kerr != nil {
 			st.InvalidSeeds++
-			r.Logger.Error("[Crawler] invalid seed skipped", slog.Any("seed", s), slog.Any("error", err))
+			r.Logger.Error("[Crawler] invalid seed skipped", slog.Any("seed", s), slog.Any("error", kerr))
+			continue
 		}
 		if _, ok := seen[key]; ok {
 			st.DedupSkipped++
@@ -64,7 +65,7 @@ func (r Runner) RunOnce(ctx context.Context) (Stats, error) {
 		st.Processed++
 
 		if perr := r.Processor.Process(ctx, cu); perr != nil {
-			if errors.Is(err, customErrors.ErrMaxPagesReached) {
+			if errors.Is(perr, customErrors.ErrMaxPagesReached) {
 				r.Logger.Info("[Crawler] stop reason=max_pages_reached processed", slog.String("seed", key), slog.Int("processed", st.Processed))
 				break
 			}

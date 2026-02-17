@@ -1,4 +1,4 @@
-package SharedConfig
+package sharedconfig
 
 import (
 	"errors"

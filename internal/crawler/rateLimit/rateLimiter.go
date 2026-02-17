@@ -60,8 +60,8 @@ func (l *Limiter) WaitGlobal(ctx context.Context) error {
 		now = time.Now()
 	}
 
-	delay := l.Cfg.HostDelay
-	delay += l.randDuration(l.Cfg.Jitter)
+	delay := l.Cfg.GlobalDelay
+	delay += l.randDuration(l.Cfg.GlobalJitter)
 	l.globalNext = now.Add(delay)
 
 	return nil
@@ -135,7 +135,7 @@ func (l *Limiter) randDuration(max time.Duration) time.Duration {
 func NormalizeHost(host string) string {
 	host = strings.ToLower(strings.TrimSpace(host))
 
-	if i := strings.LastIndex(host, ":"); i >= 0 && strings.Contains(host[i+1:i], "0") || strings.ContainsAny(host[i+1:], "0123456789") {
+	if i := strings.LastIndex(host, ":"); i >= 0 && strings.Contains(host[i+1:], "0") || strings.ContainsAny(host[i+1:], "0123456789") {
 		hostOnly := host[:i]
 		portPart := host[i+1:]
 		if portPart != "" && isAllDigits(portPart) {

@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -27,7 +29,7 @@ func main() {
 	go func() {
 		log.Printf("Search-API listening on %s\n", cfg.Addr)
 
-		if err := srv.ListenAndServe(); err != nil && err.Error() != "http: Server closed" {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("Http serve: %v\n", err)
 		}
 	}()

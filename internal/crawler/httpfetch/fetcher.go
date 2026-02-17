@@ -8,14 +8,15 @@ import (
 	"time"
 
 	"github.com/Dercraker/SearchEngine/internal/crawler/config"
+	"github.com/Dercraker/SearchEngine/internal/shared/customErrors"
 )
 
 type Fetcher struct {
-	config Config.FetcherConfig
+	config config.FetcherConfig
 	client *http.Client
 }
 
-func New(config Config.FetcherConfig) *Fetcher {
+func New(config config.FetcherConfig) *Fetcher {
 	if config.Timeout <= 0 {
 		config.Timeout = 10 * time.Second
 	}
@@ -42,7 +43,7 @@ func New(config Config.FetcherConfig) *Fetcher {
 		c.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 			if len(via) >= config.MaxRedirects {
 				config.Logger.Error("too many redirects", slog.Any("URL", req.URL), slog.Int("Redirect", len(via)))
-				return nil
+				return customErrors.ErrTooManyRedirects
 			}
 			req.Header.Set("User-Agent", config.UserAgent)
 			return nil
@@ -75,7 +76,7 @@ func (f *Fetcher) Fetch(ctx context.Context, url string) (Result, error) {
 
 	if int64(len(body)) > f.config.MaxBodyBytes {
 		f.config.Logger.Error("Body too large", slog.Any("URL", url), slog.Int64("BodySize", int64(len(body))), slog.Int64("MaxBodySize", f.config.MaxBodyBytes))
-		return Result{}, nil
+		return Result{}, customErrors.ErrBodyTooLarge
 	}
 
 	ct := resp.Header.Get("Content-Type")
