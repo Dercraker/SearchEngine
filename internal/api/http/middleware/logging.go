@@ -20,7 +20,7 @@ func Logging(logger *slog.Logger) func(http.Handler) http.Handler {
 				requestID = uuid.NewString()
 			}
 
-			r = r.WithContext(requestId.With(r.Context(), requestID))
+			r = r.WithContext(requestId.WithRunId(r.Context(), requestID))
 
 			rw := newResponseWriter(w)
 			rw.Header().Set("X-Request-ID", requestID)

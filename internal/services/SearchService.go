@@ -36,7 +36,7 @@ func (s *searchService) Search(_ any, r *http.Request, q string, limit, offset i
 			slog.Any("error", err),
 		}
 
-		if reqId, isValid := requestId.Get(ctx); isValid {
+		if reqId, isValid := requestId.GetRunId(ctx); isValid {
 			attributes = append(attributes, slog.String("request_id", reqId))
 		}
 

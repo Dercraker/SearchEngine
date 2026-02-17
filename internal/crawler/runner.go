@@ -7,8 +7,11 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/Dercraker/SearchEngine/internal/crawler/obs"
 	"github.com/Dercraker/SearchEngine/internal/crawler/seeds"
 	"github.com/Dercraker/SearchEngine/internal/shared/customErrors"
+	"github.com/Dercraker/SearchEngine/internal/shared/requestId"
+	"github.com/google/uuid"
 )
 
 type Runner struct {
@@ -20,6 +23,9 @@ type Runner struct {
 }
 
 func (r Runner) RunOnce(ctx context.Context) (Stats, error) {
+	rid := uuid.NewString()
+	ctx = requestId.WithRunId(ctx, rid)
+
 	st := Stats{StartTime: time.Now()}
 
 	raw, err := r.SeedSource.Load(ctx)
@@ -59,7 +65,7 @@ func (r Runner) RunOnce(ctx context.Context) (Stats, error) {
 
 		seen[key] = struct{}{}
 
-		r.Logger.Info("[Crawler] start for seed", slog.Any("seed", key))
+		r.Logger.Info(string(obs.RunStart), slog.String("request_id", rid), slog.Int("seeds_count", len(list)), slog.String("seed", key), slog.String("url", u.String()), slog.String("canonical_key", key))
 		cu, _ := url.Parse(key)
 
 		st.Processed++

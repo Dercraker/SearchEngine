@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/Dercraker/SearchEngine/internal/crawler/httpfetch"
 )
@@ -16,8 +17,10 @@ type Downloader struct {
 }
 
 func (d Downloader) Process(ctx context.Context, u *url.URL) error {
+	perURLCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
 
-	res, err := d.Fetcher.Fetch(ctx, u.String())
+	res, err := d.Fetcher.Fetch(perURLCtx, u.String())
 	if err != nil {
 		return err
 	}
