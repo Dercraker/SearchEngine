@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"time"
 
-	errors2 "github.com/Dercraker/SearchEngine/internal/crawler/errors"
+	"github.com/Dercraker/SearchEngine/internal/crawler/customErrors"
 	"github.com/Dercraker/SearchEngine/internal/crawler/seeds"
 )
 
@@ -63,9 +63,8 @@ func (r Runner) RunOnce(ctx context.Context) (Stats, error) {
 
 		st.Processed++
 
-		perr := r.Processor.Process(ctx, cu)
-		if perr != nil {
-			if errors.Is(err, errors2.ErrMaxPagesReached) {
+		if perr := r.Processor.Process(ctx, cu); perr != nil {
+			if errors.Is(err, customErrors.ErrMaxPagesReached) {
 				r.Logger.Info("[Crawler] stop reason=max_pages_reached processed", slog.String("seed", key), slog.Int("processed", st.Processed))
 				break
 			}

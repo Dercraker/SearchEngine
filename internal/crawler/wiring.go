@@ -10,6 +10,7 @@ import (
 	"github.com/Dercraker/SearchEngine/internal/crawler/httpfetch"
 	"github.com/Dercraker/SearchEngine/internal/crawler/middleware"
 	"github.com/Dercraker/SearchEngine/internal/crawler/processors"
+	"github.com/Dercraker/SearchEngine/internal/crawler/rateLimit"
 	"github.com/Dercraker/SearchEngine/internal/crawler/seeds"
 	"github.com/Dercraker/SearchEngine/internal/crawler/storage"
 )
@@ -38,9 +39,11 @@ func Buildcrawler(logger *slog.Logger, cfg CrawlerConfig.CrawlerConfig) Runner {
 	fetcher := httpfetch.New(cfg.FetcherConfig)
 	downloader := processors.Downloader{Fetcher: fetcher, Store: store}
 
+	limiter := rateLimit.NewRateLimiter(cfg.LimitConfig)
+
 	proc := middleware.Chain(
 		downloader,
-		middleware.Throttle(cfg.LimitConfig),
+		middleware.RateLimitMW(limiter),
 		middleware.LoggingMW(logger),
 		middleware.Retry(2, 250*time.Millisecond),
 	)
