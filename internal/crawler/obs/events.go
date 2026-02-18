@@ -3,9 +3,8 @@ package obs
 type Event string
 
 const (
-	RunStart   Event = "crawl:run:start"
-	RunSummary Event = "crawl:run:summary"
-	RunEnd     Event = "crawl:run:end"
+	RunStart Event = "crawl:run:start"
+	RunEnd   Event = "crawl:run:end"
 
 	URLStart     Event = "crawler:url:start"
 	URLEnd       Event = "crawler:url:end"

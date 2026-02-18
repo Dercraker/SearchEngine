@@ -14,7 +14,7 @@ import (
 	"github.com/Dercraker/SearchEngine/internal/shared/customErrors"
 )
 
-func Retry(logger *slog.Logger, max int, backoff time.Duration) Middleware {
+func Retry(logger *slog.Logger, st *obs.Stats, max int, backoff time.Duration) Middleware {
 	return func(next URLProcessor) URLProcessor {
 		return URLProcessorFunc(func(ctx context.Context, u *url.URL) error {
 			var err error
@@ -27,6 +27,9 @@ func Retry(logger *slog.Logger, max int, backoff time.Duration) Middleware {
 
 				if attempt == max || !shouldRetry(err) {
 					return err
+				}
+				if st != nil {
+					st.Retries.Add(1)
 				}
 
 				logger.Warn(string(obs.URLRetry),
