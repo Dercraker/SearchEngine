@@ -16,7 +16,7 @@ import (
 	"github.com/Dercraker/SearchEngine/internal/crawler/storage"
 )
 
-func BuildCrawler(logger *slog.Logger, cfg CrawlerConfig.CrawlerConfig) Runner {
+func BuildCrawler(logger *slog.Logger, cfg CrawlerConfig.CrawlerConfig) *QueueRunner {
 	stats := &obs.Stats{}
 
 	seedSource := seeds.FileSource{Path: cfg.SeedFilePath}
@@ -37,32 +37,38 @@ func BuildCrawler(logger *slog.Logger, cfg CrawlerConfig.CrawlerConfig) Runner {
 
 	q := DAL.New(dbConn)
 
-	store := storage.DocumentStore{Q: q}
+	documentStore := storage.DocumentStore{Q: q}
+	queueStore := storage.QueueStore{Q: q}
 
 	fetcherCfg := cfg.FetcherConfig
 	fetcherCfg.Logger = logger
 	fetcher := httpfetch.New(fetcherCfg)
 
 	rateLimiter := rateLimit.NewRateLimiter(cfg.LimitConfig)
-	queueStore := storage.QueueStore{Q: q}
 
-	downloader := processors.Downloader{Fetcher: fetcher, Store: store, Stats: stats}
+	downloader := processors.Downloader{
+		Fetcher: fetcher,
+		Store:   documentStore,
+		Stats:   stats,
+	}
 
 	proc := middleware.Chain(
 		downloader,
 		middleware.RateLimitMW(rateLimiter),
 		middleware.Retry(logger, stats, 2, 250*time.Millisecond),
-		middleware.OutcomeMW(logger, queueStore, "10 seconds"),
+		middleware.OutcomeMW(logger, queueStore, "10s"),
 		middleware.LoggingMW(logger),
 	)
 
-	return Runner{
-		SeedSource: seedSource,
-		Logger:     logger,
-		Processor:  proc,
-		CanonicalOptions: seeds.CanonicalOptions{
-			DropTrackingParams: true,
-		},
-		Stats: stats,
+	return &QueueRunner{
+		Logger:           logger,
+		SeedSource:       seedSource,
+		Processor:        proc,
+		Queue:            queueStore,
+		Stats:            stats,
+		CanonicalOptions: seeds.CanonicalOptions{DropTrackingParams: true},
+		batchSize:        50,
+		StaleAfter:       10 * time.Minute,
+		MaxPagesPerRun:   cfg.LimitConfig.MaxPagesPerRun,
 	}
 }

@@ -12,4 +12,5 @@ const (
 	URLRetry     Event = "crawler:url:retry"
 
 	QueueUpsert Event = "crawler:queue:upsert"
+	QueueClaim  Event = "crawler:queue:claim"
 )

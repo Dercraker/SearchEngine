@@ -12,7 +12,7 @@ import (
 )
 
 type CrawlQueue struct {
-	ID        int64
+	ID        uuid.UUID
 	Url       string
 	Status    string
 	Attempts  int32
@@ -20,6 +20,7 @@ type CrawlQueue struct {
 	NextRunAt time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	LockedAt  sql.NullTime
 }
 
 type Document struct {

@@ -5,6 +5,7 @@ import (
 	"context"
 	"log/slog"
 	"net/url"
+	"time"
 
 	"github.com/Dercraker/SearchEngine/internal/crawler/obs"
 	"github.com/Dercraker/SearchEngine/internal/crawler/processors"
@@ -24,7 +25,9 @@ func OutcomeMW(logger *slog.Logger, qs processors.QueueStore, retryAfter string)
 			}
 
 			if err != nil {
-				_ = qs.MarkFailed(ctx, u.String(), err.Error(), retryAfter)
+				duration, _ := time.ParseDuration(retryAfter)
+				retry := time.Now().Add(duration)
+				_ = qs.MarkFailed(ctx, u.String(), err.Error(), retry)
 				logger.Error(string(obs.QueueUpsert),
 					append(obs.BaseAttrs(ctx, u),
 						slog.String("queue_status", "failed"),

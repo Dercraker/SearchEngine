@@ -4,5 +4,6 @@
     <file url="file://$PROJECT_DIR$/db/migration/008_raw_content_hash_content_bytea.sql" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/db/migration/010_AllowMirrorsHash.sql" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/db/migration/011_UpdateTriggetUpdatedAtAutoInDocument.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/db/migration/012_UpdateCrawlerQueue.sql" dialect="GenericSQL" />
   </component>
 </project>

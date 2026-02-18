@@ -2,6 +2,6 @@
 UPDATE crawl_queue
 SET status      = 'crawled',
     last_error  = NULL,
-    next_run_at = now(),
+    locked_at  = NULL,
     updated_at  = now()
 WHERE url = $1;

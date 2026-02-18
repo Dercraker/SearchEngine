@@ -19,12 +19,12 @@ func main() {
 		log.Fatalf("config: %v", err)
 	}
 
-	runner := crawler.BuildCrawler(logger, crawlerConfig)
+	queueRunner := crawler.BuildCrawler(logger, crawlerConfig)
 
 	ctx, cancel := context.WithTimeout(context.Background(), crawlerConfig.RunTimeout)
 	defer cancel()
 
-	stats, err := runner.RunOnce(ctx)
+	stats, err := queueRunner.RunOnce(ctx)
 	if err != nil {
 		logger.Error("[Crawler]: failed to run once", slog.Any("error", err), slog.Any("stats", stats))
 		os.Exit(1)

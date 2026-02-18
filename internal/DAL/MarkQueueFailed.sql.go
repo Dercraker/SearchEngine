@@ -8,6 +8,7 @@ package DAL
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 const markQueueFailed = `-- name: MarkQueueFailed :exec
@@ -15,7 +16,8 @@ UPDATE crawl_queue
 SET status      = 'failed',
     attempts    = attempts + 1,
     last_error  = $2,
-    next_run_at = now() + ($3::interval),
+    next_run_at = $3,
+    locked_at   = NULL,
     updated_at  = now()
 WHERE url = $1
 `
@@ -23,10 +25,10 @@ WHERE url = $1
 type MarkQueueFailedParams struct {
 	Url       string
 	LastError sql.NullString
-	Column3   int64
+	NextRunAt time.Time
 }
 
 func (q *Queries) MarkQueueFailed(ctx context.Context, arg MarkQueueFailedParams) error {
-	_, err := q.db.ExecContext(ctx, markQueueFailed, arg.Url, arg.LastError, arg.Column3)
+	_, err := q.db.ExecContext(ctx, markQueueFailed, arg.Url, arg.LastError, arg.NextRunAt)
 	return err
 }

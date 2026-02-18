@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS crawl_queue (
   id          bigserial PRIMARY KEY,
   url         text NOT NULL UNIQUE,
-  status      text NOT NULL DEFAULT 'pending', -- pending|crawled|failed
+  status      text NOT NULL DEFAULT 'pending', -- pending | processing | crawled | failed
   attempts    int NOT NULL DEFAULT 0,
   last_error  text NULL,
   next_run_at timestamptz NOT NULL DEFAULT now(),
