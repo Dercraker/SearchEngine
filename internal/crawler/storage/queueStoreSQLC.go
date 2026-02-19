@@ -47,7 +47,7 @@ func toPGInterval(d time.Duration) sql.NullString {
 	sec := int(d.Round(time.Second).Seconds())
 	if sec <= 0 {
 		return sql.NullString{
-			String: "1",
+			String: "3600",
 			Valid:  true,
 		}
 	}

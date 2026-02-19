@@ -33,3 +33,9 @@ type Stats struct {
 func (s Stats) DurationMs() float64 {
 	return shared.DurationMs(s.StartTime, s.EndTime)
 }
+func (s Stats) DurationS() float64 {
+	return shared.DurationS(s.StartTime, s.EndTime)
+}
+func (s Stats) DurationM() float64 {
+	return shared.DurationM(s.StartTime, s.EndTime)
+}

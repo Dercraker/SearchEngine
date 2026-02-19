@@ -129,6 +129,8 @@ func (r *QueueRunner) RunOnce(ctx context.Context) (*obs.Stats, error) {
 	r.Logger.Info(string(obs.RunEnd),
 		slog.String("request_id", rid),
 		slog.Float64("duration_ms", r.Stats.DurationMs()),
+		slog.Float64("duration_s", r.Stats.DurationS()),
+		slog.Float64("duration_m", r.Stats.DurationM()),
 		slog.Int64("processed", r.Stats.Processed.Load()),
 		slog.Int64("success", r.Stats.Success.Load()),
 		slog.Int64("failed", r.Stats.Failed.Load()),

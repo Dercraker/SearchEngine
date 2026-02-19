@@ -19,7 +19,7 @@ type Downloader struct {
 }
 
 func (d Downloader) Process(ctx context.Context, u *url.URL) error {
-	perURLCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	perURLCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	res, err := d.Fetcher.Fetch(perURLCtx, u.String())
@@ -48,8 +48,7 @@ func (d Downloader) Process(ctx context.Context, u *url.URL) error {
 			}
 			d.Stats.Inserted.Add(1)
 		}
-		d.Stats.DBFailed.Add(1)
-		return err
+		return nil
 	}
 
 	if oldHash == hash {

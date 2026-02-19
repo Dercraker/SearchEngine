@@ -55,7 +55,7 @@ func BuildCrawler(logger *slog.Logger, cfg CrawlerConfig.CrawlerConfig) *QueueRu
 	proc := middleware.Chain(
 		downloader,
 		middleware.RateLimitMW(rateLimiter),
-		middleware.Retry(logger, stats, 2, 250*time.Millisecond),
+		middleware.Retry(logger, stats, 3, 250*time.Millisecond),
 		middleware.OutcomeMW(logger, queueStore, "10s"),
 		middleware.LoggingMW(logger),
 	)
@@ -67,8 +67,8 @@ func BuildCrawler(logger *slog.Logger, cfg CrawlerConfig.CrawlerConfig) *QueueRu
 		Queue:            queueStore,
 		Stats:            stats,
 		CanonicalOptions: seeds.CanonicalOptions{DropTrackingParams: true},
-		batchSize:        50,
-		StaleAfter:       10 * time.Minute,
+		batchSize:        cfg.LimitConfig.BatchSize,
+		StaleAfter:       cfg.LimitConfig.StaleAfter,
 		MaxPagesPerRun:   cfg.LimitConfig.MaxPagesPerRun,
 	}
 }
