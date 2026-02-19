@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Dercraker/SearchEngine/internal/crawler/obs"
+	"github.com/Dercraker/SearchEngine/internal/shared"
 	"github.com/Dercraker/SearchEngine/internal/shared/customErrors"
 )
 
@@ -19,9 +20,9 @@ func LoggingMW(logger *slog.Logger) Middleware {
 			logger.Info(string(obs.URLStart), obs.BaseAttrs(ctx, u)...)
 
 			err := next.Process(ctx, u)
-			d := time.Since(start)
+			d := shared.DurationMs(start, time.Now())
 
-			attrs := append(obs.BaseAttrs(ctx, u), slog.Duration("duration", d))
+			attrs := append(obs.BaseAttrs(ctx, u), slog.Float64("duration_ms", d))
 
 			if errors.Is(err, customErrors.ErrMaxPagesReached) {
 				logger.Info(string(obs.URLEnd), append(attrs,

@@ -82,22 +82,22 @@ func (r *QueueRunner) RunOnce(ctx context.Context) (*obs.Stats, error) {
 			break
 		}
 
-		items, qerr := r.Queue.ClaimNextBatch(ctx, r.batchSize)
+		batch, qerr := r.Queue.ClaimNextBatch(ctx, r.batchSize)
 		if qerr != nil {
 			r.Stats.EndTime = time.Now()
 			return r.Stats, qerr
 		}
-		if len(items) == 0 {
+		if len(batch) == 0 {
 			break
 		}
 
 		r.Logger.Info(string(obs.QueueClaim),
 			slog.String("request_id", rid),
-			slog.Int("claimed", len(items)),
+			slog.Int("claimed", len(batch)),
 			slog.Int("batch_size", int(r.batchSize)),
 		)
 
-		for _, item := range items {
+		for _, item := range batch {
 			urlStr := item.Url
 			attemps := item.Attempts
 
@@ -129,6 +129,8 @@ func (r *QueueRunner) RunOnce(ctx context.Context) (*obs.Stats, error) {
 	r.Logger.Info(string(obs.RunEnd),
 		slog.String("request_id", rid),
 		slog.Float64("duration_ms", r.Stats.DurationMs()),
+		slog.Float64("duration_s", r.Stats.DurationS()),
+		slog.Float64("duration_m", r.Stats.DurationM()),
 		slog.Int64("processed", r.Stats.Processed.Load()),
 		slog.Int64("success", r.Stats.Success.Load()),
 		slog.Int64("failed", r.Stats.Failed.Load()),

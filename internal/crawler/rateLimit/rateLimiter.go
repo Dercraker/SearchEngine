@@ -3,6 +3,7 @@ package rateLimit
 import (
 	"context"
 	"math/rand"
+	"net"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -136,8 +137,10 @@ func NormalizeHost(host string) string {
 	host = strings.ToLower(strings.TrimSpace(host))
 
 	if i := strings.LastIndex(host, ":"); i >= 0 && strings.Contains(host[i+1:], "0") || strings.ContainsAny(host[i+1:], "0123456789") {
-		hostOnly := host[:i]
-		portPart := host[i+1:]
+		hostOnly, portPart, err := net.SplitHostPort(host)
+		if err != nil {
+			return host
+		}
 		if portPart != "" && isAllDigits(portPart) {
 			return hostOnly
 		}

@@ -33,7 +33,7 @@ func (s QueueStore) MarkFailed(ctx context.Context, url string, lastErr string, 
 		Url: url,
 		LastError: sql.NullString{
 			String: lastErr,
-			Valid:  false,
+			Valid:  true,
 		},
 		NextRunAt: nextRunAt,
 	})
@@ -47,7 +47,7 @@ func toPGInterval(d time.Duration) sql.NullString {
 	sec := int(d.Round(time.Second).Seconds())
 	if sec <= 0 {
 		return sql.NullString{
-			String: "1",
+			String: (time.Duration(3600) * time.Second).String(),
 			Valid:  true,
 		}
 	}

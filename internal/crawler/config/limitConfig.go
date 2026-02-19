@@ -8,6 +8,8 @@ import (
 
 type LimitConfig struct {
 	MaxPagesPerRun int64
+	BatchSize      int32
+	StaleAfter     time.Duration
 
 	GlobalDelay  time.Duration
 	GlobalJitter time.Duration
@@ -19,6 +21,12 @@ type LimitConfig struct {
 
 func LoadLimitConfig() (limitConfig LimitConfig, err error) {
 	maxPages := configHelper.GetEnvInt64("CRAWLER_LIMIT_MAX_PAGES_PER_RUN", 200)
+	batch := configHelper.GetEnvInt32("CRAWLER_LIMIT_BATCH_SIZE", 10)
+
+	stale, err := configHelper.ParseDuration("CRAWLER_LIMIT_STALE_TIME", "60m")
+	if err != nil {
+		return LimitConfig{}, err
+	}
 
 	globalDelay, err := configHelper.ParseDuration("CRAWLER_LIMIT_GLOBAL_DELAY", "200ms")
 	if err != nil {
@@ -44,6 +52,8 @@ func LoadLimitConfig() (limitConfig LimitConfig, err error) {
 
 	return LimitConfig{
 		MaxPagesPerRun: maxPages,
+		BatchSize:      batch,
+		StaleAfter:     stale,
 		GlobalDelay:    globalDelay,
 		GlobalJitter:   globalJitter,
 		HostDelay:      hostDelay,
