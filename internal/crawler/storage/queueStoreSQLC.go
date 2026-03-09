@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/Dercraker/SearchEngine/internal/DAL"
@@ -40,19 +41,16 @@ func (s QueueStore) MarkFailed(ctx context.Context, url string, lastErr string, 
 }
 
 func (s QueueStore) ReleaseStale(ctx context.Context, staleAfter time.Duration) error {
-	return s.Q.ReleaseStaleProcessing(ctx, toPGInterval(staleAfter))
+	return s.Q.ReleaseStaleProcessing(ctx, sql.NullString{
+		String: toPGInterval(staleAfter),
+		Valid:  true,
+	})
 }
 
-func toPGInterval(d time.Duration) sql.NullString {
+func toPGInterval(d time.Duration) string {
 	sec := int(d.Round(time.Second).Seconds())
 	if sec <= 0 {
-		return sql.NullString{
-			String: (time.Duration(3600) * time.Second).String(),
-			Valid:  true,
-		}
+		sec = 1
 	}
-	return sql.NullString{
-		String: (time.Duration(sec) * time.Second).String(),
-		Valid:  true,
-	}
+	return fmt.Sprintf("%d seconds", sec)
 }

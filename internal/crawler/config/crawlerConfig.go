@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"time"
 
 	"github.com/Dercraker/SearchEngine/internal/shared/config"
@@ -10,21 +9,16 @@ import (
 )
 
 type CrawlerConfig struct {
-	SeedFilePath  string
 	RunTimeout    time.Duration
 	FetcherConfig FetcherConfig
 	LimitConfig   LimitConfig
+	WorkerConfig  WorkerConfig
 
 	DatabaseConfig sharedconfig.DatabaseConfig
 }
 
 func LoadCrawlerConfig() (CrawlerConfig, error) {
 	_ = godotenv.Load()
-
-	sfp := configHelper.GetEnv("CRAWLER_SEED_FILE_PATH", "")
-	if sfp == "" {
-		return CrawlerConfig{}, errors.New("SeedFilePath is required")
-	}
 
 	runTimeout, err := configHelper.ParseDuration("CRAWLER_RUN_TIMEOUT", "1h")
 	if err != nil {
@@ -46,11 +40,17 @@ func LoadCrawlerConfig() (CrawlerConfig, error) {
 		return CrawlerConfig{}, err
 	}
 
+	workerConfig, err := LoadWorkerConfig()
+	if err != nil {
+		return CrawlerConfig{}, err
+	}
+
 	return CrawlerConfig{
-		SeedFilePath:   sfp,
-		RunTimeout:     runTimeout,
-		FetcherConfig:  fetchConfig,
-		LimitConfig:    limitConfig,
+		RunTimeout:    runTimeout,
+		FetcherConfig: fetchConfig,
+		LimitConfig:   limitConfig,
+		WorkerConfig:  workerConfig,
+
 		DatabaseConfig: dbConfig,
 	}, nil
 }

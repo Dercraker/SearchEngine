@@ -19,8 +19,6 @@ import (
 func BuildCrawler(logger *slog.Logger, cfg CrawlerConfig.CrawlerConfig) *QueueRunner {
 	stats := &obs.Stats{}
 
-	seedSource := seeds.FileSource{Path: cfg.SeedFilePath}
-
 	dbConn, err := dbx.Open(logger, dbx.Options{
 		DSN:             cfg.DatabaseConfig.DatabaseDSN,
 		PingTimeout:     cfg.DatabaseConfig.DBPingTimeout,
@@ -61,7 +59,6 @@ func BuildCrawler(logger *slog.Logger, cfg CrawlerConfig.CrawlerConfig) *QueueRu
 
 	return &QueueRunner{
 		Logger:           logger,
-		SeedSource:       seedSource,
 		Processor:        proc,
 		Queue:            queueStore,
 		Stats:            stats,
@@ -69,5 +66,8 @@ func BuildCrawler(logger *slog.Logger, cfg CrawlerConfig.CrawlerConfig) *QueueRu
 		batchSize:        cfg.LimitConfig.BatchSize,
 		StaleAfter:       cfg.LimitConfig.StaleAfter,
 		MaxPagesPerRun:   cfg.LimitConfig.MaxPagesPerRun,
+
+		InstanceId: cfg.WorkerConfig.CrawlerInstanceID,
+		Worker:     cfg.WorkerConfig.CrawlerWorker,
 	}
 }

@@ -8,8 +8,6 @@ import (
 )
 
 type Stats struct {
-	TotalSeeds   int
-	InvalidSeeds int
 	DedupSkipped int
 
 	Processed atomic.Int64

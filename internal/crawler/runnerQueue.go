@@ -2,77 +2,61 @@ package crawler
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	"net/url"
 	"time"
 
+	"github.com/Dercraker/SearchEngine/internal/DAL"
 	"github.com/Dercraker/SearchEngine/internal/crawler/obs"
 	"github.com/Dercraker/SearchEngine/internal/crawler/seeds"
 	"github.com/Dercraker/SearchEngine/internal/crawler/storage"
-	"github.com/Dercraker/SearchEngine/internal/shared/customErrors"
+	"github.com/Dercraker/SearchEngine/internal/shared/instanceId"
 	"github.com/Dercraker/SearchEngine/internal/shared/requestId"
 	"github.com/google/uuid"
 )
 
 type QueueRunner struct {
-	Logger     *slog.Logger
-	SeedSource seeds.Source
-	Processor  UrlProcessor
-	Queue      storage.QueueStore
-	Stats      *obs.Stats
+	Logger    *slog.Logger
+	Processor UrlProcessor
+	Queue     storage.QueueStore
+	Stats     *obs.Stats
 
 	CanonicalOptions seeds.CanonicalOptions
 
 	batchSize      int32
 	StaleAfter     time.Duration
 	MaxPagesPerRun int64
+
+	InstanceId string
+	Worker     int
+}
+
+type queueJob struct {
+	Item DAL.ClaimNextBatchRow
+	url  *url.URL
+}
+
+type queueResult struct {
+	Item DAL.ClaimNextBatchRow
+	err  error
 }
 
 func (r *QueueRunner) RunOnce(ctx context.Context) (*obs.Stats, error) {
 	rid := uuid.NewString()
 	ctx = requestId.WithRunId(ctx, rid)
+	ctx = instanceId.WithInstanceId(ctx, r.InstanceId)
 
 	r.Stats.StartTime = time.Now()
 	r.Logger.Info(
 		string(obs.RunStart),
 		slog.String("request_id", rid),
+		slog.String("instance_id", r.InstanceId),
+		slog.Int("workers", r.Worker),
+		slog.Duration("stale_after", r.StaleAfter),
 	)
 
 	if r.StaleAfter > 0 {
 		if err := r.Queue.ReleaseStale(ctx, r.StaleAfter); err != nil {
-			r.Stats.DBFailed.Add(1)
-		}
-	}
-
-	raw, err := r.SeedSource.Load(ctx)
-	if err != nil {
-		r.Stats.EndTime = time.Now()
-		return r.Stats, err
-	}
-	list := seeds.SplitSeeds(raw)
-	r.Stats.TotalSeeds = len(list)
-
-	if len(list) == 0 {
-		r.Logger.Error("[Crawler] no seeds provided")
-		r.Stats.EndTime = time.Now()
-		return r.Stats, err
-	}
-
-	for _, s := range list {
-		u, nerr := seeds.NormalizeHTTPURL(s)
-		if nerr != nil {
-			r.Stats.InvalidSeeds++
-			continue
-		}
-
-		key, kerr := seeds.CanonicalKey(u, r.CanonicalOptions)
-		if kerr != nil {
-			r.Stats.InvalidSeeds++
-			continue
-		}
-
-		if err := r.Queue.Enqueue(ctx, key); err != nil {
 			r.Stats.DBFailed.Add(1)
 		}
 	}
@@ -93,36 +77,12 @@ func (r *QueueRunner) RunOnce(ctx context.Context) (*obs.Stats, error) {
 
 		r.Logger.Info(string(obs.QueueClaim),
 			slog.String("request_id", rid),
+			slog.String("instance_id", r.InstanceId),
 			slog.Int("claimed", len(batch)),
 			slog.Int("batch_size", int(r.batchSize)),
 		)
 
-		for _, item := range batch {
-			urlStr := item.Url
-			attemps := item.Attempts
-
-			r.Stats.Processed.Add(1)
-
-			pu, _ := url.Parse(urlStr)
-			perr := r.Processor.Process(ctx, pu)
-			if perr != nil {
-				r.Stats.Failed.Add(1)
-
-				next := nextRunAt(time.Now(), attemps)
-				if err := r.Queue.MarkFailed(ctx, urlStr, classifyLastError(perr), next); err != nil {
-					r.Stats.DBFailed.Add(1)
-				}
-
-				if errors.Is(perr, customErrors.ErrMaxPagesReached) {
-					break
-				}
-				continue
-			}
-			r.Stats.Success.Add(1)
-			if err := r.Queue.MarkCrawled(ctx, urlStr); err != nil {
-				r.Stats.DBFailed.Add(1)
-			}
-		}
+		r.processBatch(ctx, batch)
 	}
 
 	r.Stats.EndTime = time.Now()
@@ -144,6 +104,109 @@ func (r *QueueRunner) RunOnce(ctx context.Context) (*obs.Stats, error) {
 		slog.Int64("retries", r.Stats.Retries.Load()),
 	)
 	return r.Stats, nil
+}
+
+func (r *QueueRunner) startWorkers(ctx context.Context, jobs <-chan queueJob, results chan<- queueResult) {
+	workers := r.Worker
+	batchSize := r.batchSize
+	if workers <= 0 {
+		workers = 1
+	}
+	if batchSize <= 0 {
+		batchSize = int32(workers)
+	}
+
+	for i := 0; i < workers; i++ {
+		go func(workerId int) {
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case job, ok := <-jobs:
+					if !ok {
+						return
+					}
+
+					err := r.Processor.Process(ctx, job.url)
+					results <- queueResult{
+						Item: job.Item,
+						err:  err,
+					}
+				}
+			}
+		}(i)
+	}
+}
+
+func buildJobs(batch []DAL.ClaimNextBatchRow) []queueJob {
+	jobs := make([]queueJob, 0, len(batch))
+	for i, item := range batch {
+		pu, err := url.Parse(item.Url)
+		if err != nil {
+			continue
+		}
+		jobs = append(jobs, queueJob{
+			Item: batch[i],
+			url:  pu,
+		})
+	}
+	return jobs
+}
+
+func (r *QueueRunner) processBatch(ctx context.Context, batch []DAL.ClaimNextBatchRow) {
+	if len(batch) == 0 {
+		return
+	}
+
+	jobs := make(chan queueJob, len(batch))
+	results := make(chan queueResult, len(batch))
+
+	r.startWorkers(ctx, jobs, results)
+
+	preparedJobs := buildJobs(batch)
+
+	skipped := len(batch) - len(preparedJobs)
+	if skipped > 0 {
+		r.Stats.SkippedNonHTML.Add(int64(skipped))
+	}
+
+	for _, job := range preparedJobs {
+		select {
+		case <-ctx.Done():
+			return
+		case jobs <- job:
+		}
+	}
+	close(jobs)
+
+	for i := 0; i < len(preparedJobs); i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case res := <-results:
+			r.handleResult(ctx, res)
+		}
+	}
+}
+
+func (r *QueueRunner) handleResult(ctx context.Context, res queueResult) {
+	if res.err != nil {
+		r.Stats.Failed.Add(1)
+
+		next := nextRunAt(time.Now(), res.Item.Attempts)
+		if err := r.Queue.MarkFailed(ctx, res.Item.Url, classifyLastError(res.err), next); err != nil {
+			r.Stats.DBFailed.Add(1)
+		}
+		return
+	}
+
+	r.Stats.Success.Add(1)
+
+	if err := r.Queue.MarkCrawled(ctx, res.Item.Url); err != nil {
+		r.Stats.DBFailed.Add(1)
+		return
+	}
+
 }
 
 func nextRunAt(now time.Time, attempt int32) time.Time {

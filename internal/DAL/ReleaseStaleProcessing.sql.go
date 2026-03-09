@@ -17,7 +17,7 @@ SET status     = 'pending',
     updated_at = now()
 WHERE status = 'processing'
   AND locked_at IS NOT NULL
-  AND locked_at < (now() - ($1)::interval)
+  AND locked_at < (now() - ($1::interval)
 `
 
 func (q *Queries) ReleaseStaleProcessing(ctx context.Context, dollar_1 sql.NullString) error {
